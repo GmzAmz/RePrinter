@@ -1,44 +1,13 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 
-
-
 #define BACKLIGHT_PIN     13
-
-//LiquidCrystal_I2C lcd(0x3F);  // Set the LCD I2C address
-
-//LiquidCrystal_I2C lcd(0x3F, BACKLIGHT_PIN, POSITIVE);  // Set the LCD I2C address
-
 
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
-//// Creat a set of new characters
-//const uint8_t charBitmap[][8] = {
-//   { 0xc, 0x12, 0x12, 0xc, 0, 0, 0, 0 },
-//   { 0x6, 0x9, 0x9, 0x6, 0, 0, 0, 0 },
-//   { 0x0, 0x6, 0x9, 0x9, 0x6, 0, 0, 0x0 },
-//   { 0x0, 0xc, 0x12, 0x12, 0xc, 0, 0, 0x0 },
-//   { 0x0, 0x0, 0xc, 0x12, 0x12, 0xc, 0, 0x0 },
-//   { 0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0, 0x0 },
-//   { 0x0, 0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0 },
-//   { 0x0, 0x0, 0x0, 0xc, 0x12, 0x12, 0xc, 0x0 }
-//   
-//};
-
 void setup()
 {
-//   int charBitmapSize = (sizeof(charBitmap ) / sizeof (charBitmap[0]));
-
-//  // Switch on the backlight
-//  pinMode ( BACKLIGHT_PIN, OUTPUT );
-//  digitalWrite ( BACKLIGHT_PIN, LOW );
-  
-  lcd.begin(20,4);               // initialize the lcd 
-
-//   for ( int i = 0; i < charBitmapSize; i++ )
-//   {
-//      lcd.createChar ( i, (uint8_t *)charBitmap[i] );
-//   }
+  lcd.begin(20,4);
 
   lcd.home ();                   // go home
   lcd.print("Hello, ARDUINO ");  
@@ -56,6 +25,7 @@ void setup()
   lcd.print("ideal-XXXX-curr-XXXX");
   delay(1000);
 }
+
 void loop()
 {
   byte i1 = random();
@@ -78,9 +48,7 @@ void loop()
   //set current temp
   lcd.setCursor(16,0);
   lcd.print(t2);
-  
-  
-  delay(500);
-  
-}
 
+  delay(500);
+
+}
