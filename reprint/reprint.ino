@@ -159,17 +159,6 @@ void loop()
     count = 0;
     heater.write(heat);
   }
-  lcd.home ();
-  // Do a little animation by writing to the same location
-  for ( int i = 0; i < 2; i++ )
-  {
-    for ( int j = 0; j < 16; j++ )
-    {
-      lcd.print (char(random(7)));
-    }
-    lcd.setCursor ( 0, 1 );
-  }
-  delay (200);
   byte i1 = random();
   byte i2 = random();
   byte i3 = random();
