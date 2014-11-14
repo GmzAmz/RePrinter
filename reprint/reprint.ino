@@ -147,7 +147,7 @@ void setup()
 
 void loop()
 {
-<<<<<<< HEAD
+
 //  temp = analogRead(1);
 //  if (count < 10)
 //  {
@@ -167,38 +167,6 @@ void loop()
 //    count = 0;
 //    heater.write(heat);
 //  }
-//  lcd.home ();
-//  // Do a little animation by writing to the same location
-//  for ( int i = 0; i < 2; i++ )
-//  {
-//    for ( int j = 0; j < 16; j++ )
-//    {
-//      lcd.print (char(random(7)));
-//    }
-//    lcd.setCursor ( 0, 1 );
-//  }
-//  delay (200);
-=======
-  temp = analogRead(1);
-  if (count < 10)
-  {
-    count ++;
-    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
-  }
-  else if (count > 10)
-  {
-    if (temp < lowTemp)
-    {
-      heat ++;
-    }
-    else if (temp > highTemp)
-    {
-      heat --;
-    }
-    count = 0;
-    heater.write(heat);
-  }
->>>>>>> origin/master
   byte i1 = random();
   byte i2 = random();
   byte i3 = random();
