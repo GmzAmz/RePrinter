@@ -4,20 +4,20 @@
 
 #define BACKLIGHT_PIN     13
 
-int temp;
-int tempLCD;
-int heat = 20;//start at a mid range to start the heating
-const int lowTemp = 1;//min of temp range to extrude
-const int highTemp = 3;//max of temp range to extrude
-int count = 0;
-Servo heater;
-LiquidCrystal_I2C lcd(0x38);  // Set the LCD I2C address
+//int temp;
+//int tempLCD;
+//int heat = 20;//start at a mid range to start the heating
+//const int lowTemp = 1;//min of temp range to extrude
+//const int highTemp = 3;//max of temp range to extrude
+//int count = 0;
+//Servo heater;
+LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
 void setup()
 {
-
-  heater.attach(6);
-  Serial.begin(9600);
+//
+//  heater.attach(6);
+//  Serial.begin(9600);
 
   lcd.begin(20,4);
   uint8_t L1[8] = {
@@ -125,51 +125,58 @@ void setup()
   //ideal iiii curr cccc
   lcd.setCursor(0,0);
   lcd.print("ideal-XXXX-curr-XXXX");
-  lcd.setCursor(0,2);
-  lcd.print(char(0));
-  lcd.print(char(1));
-  lcd.print(char(2));
-  lcd.print(char(3));
-  lcd.print(char(4));
-  lcd.print(char(5));
-  lcd.print(char(6));
-  lcd.print(char(7));
+//  lcd.setCursor(0,2);
+//  lcd.print(char(0));
+//  lcd.print(char(1));
+//  lcd.print(char(2));
+//  lcd.print(char(3));
+//  lcd.print(char(4));
+//  lcd.print(char(5));
+//  lcd.print(char(6));
+//  lcd.print(char(7));
+  writeBar(0,0);
+  writeBar(1,1);
+  writeBar(2,2);
+  writeBar(3,3);
+  writeBar(4,4);
+  writeBar(5,5);
+  writeBar(10,6);
   delay(1000);
 
 }
 
 void loop()
 {
-  temp = analogRead(1);
-  if (count < 10)
-  {
-    count ++;
-    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
-  }
-  else if (count > 10)
-  {
-    if (temp < lowTemp)
-    {
-      heat ++;
-    }
-    else if (temp > highTemp)
-    {
-      heat --;
-    }
-    count = 0;
-    heater.write(heat);
-  }
-  lcd.home ();
-  // Do a little animation by writing to the same location
-  for ( int i = 0; i < 2; i++ )
-  {
-    for ( int j = 0; j < 16; j++ )
-    {
-      lcd.print (char(random(7)));
-    }
-    lcd.setCursor ( 0, 1 );
-  }
-  delay (200);
+//  temp = analogRead(1);
+//  if (count < 10)
+//  {
+//    count ++;
+//    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
+//  }
+//  else if (count > 10)
+//  {
+//    if (temp < lowTemp)
+//    {
+//      heat ++;
+//    }
+//    else if (temp > highTemp)
+//    {
+//      heat --;
+//    }
+//    count = 0;
+//    heater.write(heat);
+//  }
+//  lcd.home ();
+//  // Do a little animation by writing to the same location
+//  for ( int i = 0; i < 2; i++ )
+//  {
+//    for ( int j = 0; j < 16; j++ )
+//    {
+//      lcd.print (char(random(7)));
+//    }
+//    lcd.setCursor ( 0, 1 );
+//  }
+//  delay (200);
   byte i1 = random();
   byte i2 = random();
   byte i3 = random();
@@ -194,4 +201,35 @@ void loop()
   delay(500);
 
 }
+uint8_t pos = 0;
+uint16_t graph[20]  = {0,0,0,0,0,
+                      0,0,0,0,0,
+                      0,0,0,0,0,
+                      0,0,0,0,0};
+uint16_t dtemp = 256;
+void updateBars(uint8_t temp){
+  pos++;
+  if (pos > 19){ pos = 0;};
+  uint8_t tempg= map (temp, 0, dtemp*2, 0, 16);
+  graph[pos] = tempg;
+  for (int i = 0; i < 19; i++){
+    if (pos + i > 19){
+      writeBar(graph[pos - 19], i + 1);
+    } else {
+      writeBar(graph[pos], i + 1);
+    }
+  } 
+}
 
+void writeBar(uint8_t height, uint8_t pos){
+  if (height <=8){
+    lcd.setCursor(pos, 3);
+    lcd.print(char(height));
+  } else {
+    height -= 8;
+    lcd.setCursor(pos, 2);
+    lcd.print(char(height));
+    lcd.setCursor(pos, 3);
+    lcd.print(char(7));
+  }
+}
