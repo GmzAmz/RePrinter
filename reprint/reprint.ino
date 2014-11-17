@@ -14,7 +14,7 @@ uint16_t graph[20]  = {0,0,0,0,0,
 //const int lowTemp = 1;//min of temp range to extrude
 //const int highTemp = 3;//max of temp range to extrude
 //int count = 0;
-//Servo heater;
+//int servo library for PWM
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
 void setup()
