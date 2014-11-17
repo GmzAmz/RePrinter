@@ -4,6 +4,10 @@
 
 #define BACKLIGHT_PIN     13
 
+uint16_t graph[20]  = {0,0,0,0,0,
+                      0,0,0,0,0,
+                      0,0,0,0,0,
+                      0,0,0,0,0};
 //int temp;
 //int tempLCD;
 //int heat = 20;//start at a mid range to start the heating
@@ -167,48 +171,58 @@ void loop()
 //    count = 0;
 //    heater.write(heat);
 //  }
-  byte i1 = random();
-  byte i2 = random();
-  byte i3 = random();
-  byte t1 = random();
-  byte t2 = random();
-  //setP
-  lcd.setCursor(3,1);
-  lcd.print(i1);
-  //setI
-  lcd.setCursor(9,1);
-  lcd.print(i2);
-  //setD
-  lcd.setCursor(15,1);
-  lcd.print(i3);
-  //set Ideal temp
-  lcd.setCursor(6,0);
-  lcd.print(t1);
-  //set current temp
-  lcd.setCursor(16,0);
-  lcd.print(t2);
+//  byte i1 = random();
+//  byte i2 = random();
+//  byte i3 = random();
+//  byte t1 = random();
+//  byte t2 = random();
+//  //setP
+//  lcd.setCursor(3,1);
+//  lcd.print(i1);
+//  //setI
+//  lcd.setCursor(9,1);
+//  lcd.print(i2);
+//  //setD
+//  lcd.setCursor(15,1);
+//  lcd.print(i3);
+//  //set Ideal temp
+//  lcd.setCursor(6,0);
+//  lcd.print(t1);
+//  //set current temp
+//  lcd.setCursor(16,0);
+//  lcd.print(t2);
 
   delay(500);
-
+  static int z = 0;
+  updateBars(z);
+  lcd.setCursor(0,0);
+  z+=5;
+  lcd.setCursor(0,2);
+  lcd.print(z);
 }
-uint8_t pos = 0;
-uint16_t graph[20]  = {0,0,0,0,0,
-                      0,0,0,0,0,
-                      0,0,0,0,0,
-                      0,0,0,0,0};
-uint16_t dtemp = 256;
+uint16_t dtemp = 255;
+
 void updateBars(uint8_t temp){
-  pos++;
-  if (pos > 19){ pos = 0;};
-  uint8_t tempg= map (temp, 0, dtemp*2, 0, 16);
+  static uint8_t pos = 0;
+  if (pos > 19){ pos = 0;}
+  lcd.setCursor(5,2);
+  lcd.print(pos);
+  uint8_t tempg = map (temp, 0, dtemp*2, 0, 16);
   graph[pos] = tempg;
-  for (int i = 0; i < 19; i++){
-    if (pos + i > 19){
-      writeBar(graph[pos - 19], i + 1);
+  for (int i = 0; i < 20;){
+    if (pos + i >= 19){
+      writeBar(graph[pos  + i - 19],  i);
+//      delay(200);
     } else {
-      writeBar(graph[pos], i + 1);
+      writeBar(graph[pos + i], i);
+//      delay(200);
     }
+    lcd.setCursor(10,2);
+    lcd.print(i);
+    i++;
+    
   } 
+  pos++;
 }
 
 void writeBar(uint8_t height, uint8_t pos){
