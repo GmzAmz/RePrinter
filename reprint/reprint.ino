@@ -171,54 +171,50 @@ void loop()
 //    count = 0;
 //    heater.write(heat);
 //  }
-//  byte i1 = random();
-//  byte i2 = random();
-//  byte i3 = random();
-//  byte t1 = random();
-//  byte t2 = random();
-//  //setP
-//  lcd.setCursor(3,1);
-//  lcd.print(i1);
-//  //setI
-//  lcd.setCursor(9,1);
-//  lcd.print(i2);
-//  //setD
-//  lcd.setCursor(15,1);
-//  lcd.print(i3);
-//  //set Ideal temp
-//  lcd.setCursor(6,0);
-//  lcd.print(t1);
-//  //set current temp
-//  lcd.setCursor(16,0);
-//  lcd.print(t2);
+  byte i1 = random();
+  byte i2 = random();
+  byte i3 = random();
+  byte t1 = random();
+  byte t2 = random();
+  //setP
+  lcd.setCursor(3,1);
+  lcd.print(i1);
+  //setI
+  lcd.setCursor(9,1);
+  lcd.print(i2);
+  //setD
+  lcd.setCursor(15,1);
+  lcd.print(i3);
+  //set Ideal temp
+  lcd.setCursor(6,0);
+  lcd.print(t1);
+  //set current temp
+  lcd.setCursor(16,0);
+  lcd.print(t2);
 
-  delay(500);
-  static int z = 0;
-  updateBars(z);
-  lcd.setCursor(0,0);
-  z+=5;
-  lcd.setCursor(0,2);
-  lcd.print(z);
+  for ( uint8_t i = 0; i <= 15;i++){
+    updateBars(i);
+    
+  }
+  for ( uint8_t i = 15; i > 0; i--){
+    updateBars(i);
+    
+  }
 }
-uint16_t dtemp = 255;
+uint16_t dtemp = 1228;
 
 void updateBars(uint8_t temp){
   static uint8_t pos = 0;
   if (pos > 19){ pos = 0;}
-  lcd.setCursor(5,2);
-  lcd.print(pos);
-  uint8_t tempg = map (temp, 0, dtemp*2, 0, 16);
-  graph[pos] = tempg;
+  graph[pos] = temp;
   for (int i = 0; i < 20;){
     if (pos + i >= 19){
-      writeBar(graph[pos  + i - 19],  i);
+      writeBar(graph[pos + i - 19],  i);
 //      delay(200);
     } else {
-      writeBar(graph[pos + i], i);
+      writeBar(graph[pos + i + 1], i);
 //      delay(200);
     }
-    lcd.setCursor(10,2);
-    lcd.print(i);
     i++;
     
   } 
@@ -226,9 +222,11 @@ void updateBars(uint8_t temp){
 }
 
 void writeBar(uint8_t height, uint8_t pos){
-  if (height <=8){
+  if (height <=7){
     lcd.setCursor(pos, 3);
     lcd.print(char(height));
+    lcd.setCursor(pos,2);
+    lcd.print(" ");
   } else {
     height -= 8;
     lcd.setCursor(pos, 2);
