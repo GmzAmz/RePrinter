@@ -1,13 +1,11 @@
+#include <Keypad.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <Servo.h>
 
 #define BACKLIGHT_PIN     13
 
-uint16_t graph[20]  = {0,0,0,0,0,
-                      0,0,0,0,0,
-                      0,0,0,0,0,
-                      0,0,0,0,0};
+
 //int temp;
 //int tempLCD;
 //int heat = 20;//start at a mid range to start the heating
@@ -23,18 +21,126 @@ Servo mc2;
 Servo mc3;
 Servo mc4;
 
-int mc1_speed = 0;
-int mc2_speed = 0;
-int mc3_speed = 0;
-int mc4_speed = 0;
+int mc1_speed = 10;
+int mc2_speed = 60;
+int mc3_speed = 100;
+int mc4_speed = 140;
 
 void setup()
 {
-//
 //  heater.attach(6);
-//  Serial.begin(9600);
-
+  Serial.begin(9600);
   lcd.begin(20,4);
+  setupLCDChars();
+  lcd.clear();
+  //--------------------
+  //--Pppp--Iiii--Dddd--
+  lcd.setCursor(0,1);
+  lcd.print("--PXXX--IXXX--DXXX--");
+  //--------------------
+  //ideal iiii curr cccc
+  lcd.setCursor(0,0);
+  lcd.print("ideal-XXXX-curr-XXXX");
+  //Setup for motor controller pin out
+  mc1.attach(3);
+  mc2.attach(5);
+  mc3.attach(6);
+  mc4.attach(9);
+
+}
+
+void loop()
+{
+  randomizePIDT();
+  
+//  temp = analogRead(1);
+//  if (count < 10)
+//  {
+//    count ++;
+//    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
+//  }
+//  else if (count > 10)
+//  {
+//    if (temp < lowTemp)
+//    {
+//      heat ++;
+//    }
+//    else if (temp > highTemp)
+//    {
+//      heat --;
+//    }
+//    count = 0;
+//    heater.write(heat);
+//  }
+
+
+  for ( uint8_t i = 0; i <= 15;i++){
+    updateBars(i);
+  }
+  for ( uint8_t i = 15; i > 0; i--){
+    updateBars(i);
+  }
+  //motor controller speed is -180 to 180 closer to zero is faster for some reason
+  mc1.write(mc1_speed);
+  mc2.write(mc2_speed);
+  mc3.write(mc3_speed);
+  mc4.write(mc4_speed);
+}
+
+void updateBars(uint8_t temp){
+  static uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  static uint8_t pos = 0;
+  if (pos > 19){ pos = 0;}
+  graph[pos] = temp;
+  for (int i = 0; i < 20;i++){
+    if (pos + i >= 19){
+      writeBar(graph[pos + i - 19],  i);
+    } else {
+      writeBar(graph[pos + i + 1], i);
+    }
+  } 
+  pos++;
+}
+
+void writeBar(uint8_t height, uint8_t pos){
+  if (height <=7){
+    lcd.setCursor(pos, 3);
+    lcd.print(char(height));
+    lcd.setCursor(pos,2);
+    lcd.print(" ");
+  } else {
+    height -= 8;
+    lcd.setCursor(pos, 2);
+    lcd.print(char(height));
+    lcd.setCursor(pos, 3);
+    lcd.print(char(7));
+  }
+}
+
+void randomizePIDT(){
+  byte i1 = random();
+  byte i2 = random();
+  byte i3 = random();
+  byte t1 = random();
+  byte t2 = random();
+  //setP
+  lcd.setCursor(3,1);
+  lcd.print(i1);
+  //setI
+  lcd.setCursor(9,1);
+  lcd.print(i2);
+  //setD
+  lcd.setCursor(15,1);
+  lcd.print(i3);
+  //set Ideal temp
+  lcd.setCursor(6,0);
+  lcd.print(t1);
+  //set current temp
+  lcd.setCursor(16,0);
+  lcd.print(t2);
+}
+
+void setupLCDChars(){
   uint8_t L1[8] = {
     0b00000,
     0b00000,
@@ -131,130 +237,5 @@ void setup()
     0b11111
   };
   lcd.createChar(7,L8);
-  lcd.clear();
-  //--------------------
-  //--Pppp--Iiii--Dddd--
-  lcd.setCursor(0,1);
-  lcd.print("--PXXX--IXXX--DXXX--");
-  //--------------------
-  //ideal iiii curr cccc
-  lcd.setCursor(0,0);
-  lcd.print("ideal-XXXX-curr-XXXX");
-//  lcd.setCursor(0,2);
-//  lcd.print(char(0));
-//  lcd.print(char(1));
-//  lcd.print(char(2));
-//  lcd.print(char(3));
-//  lcd.print(char(4));
-//  lcd.print(char(5));
-//  lcd.print(char(6));
-//  lcd.print(char(7));
-  writeBar(0,0);
-  writeBar(1,1);
-  writeBar(2,2);
-  writeBar(3,3);
-  writeBar(4,4);
-  writeBar(5,5);
-  writeBar(10,6);
-  delay(1000);
-
-//Setup for motor controller pin out
-  mc1.attach(3);
-  mc2.attach(5);
-  mc3.attach(6);
-  mc4.attach(9);
-
 }
-
-void loop()
-{
-
-//  temp = analogRead(1);
-//  if (count < 10)
-//  {
-//    count ++;
-//    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
-//  }
-//  else if (count > 10)
-//  {
-//    if (temp < lowTemp)
-//    {
-//      heat ++;
-//    }
-//    else if (temp > highTemp)
-//    {
-//      heat --;
-//    }
-//    count = 0;
-//    heater.write(heat);
-//  }
-  byte i1 = random();
-  byte i2 = random();
-  byte i3 = random();
-  byte t1 = random();
-  byte t2 = random();
-  //setP
-  lcd.setCursor(3,1);
-  lcd.print(i1);
-  //setI
-  lcd.setCursor(9,1);
-  lcd.print(i2);
-  //setD
-  lcd.setCursor(15,1);
-  lcd.print(i3);
-  //set Ideal temp
-  lcd.setCursor(6,0);
-  lcd.print(t1);
-  //set current temp
-  lcd.setCursor(16,0);
-  lcd.print(t2);
-
-  for ( uint8_t i = 0; i <= 15;i++){
-    updateBars(i);
-    
-  }
-  for ( uint8_t i = 15; i > 0; i--){
-    updateBars(i);
-    
-  }
-}
-uint16_t dtemp = 1228;
-
-void updateBars(uint8_t temp){
-  static uint8_t pos = 0;
-  if (pos > 19){ pos = 0;}
-  graph[pos] = temp;
-  for (int i = 0; i < 20;){
-    if (pos + i >= 19){
-      writeBar(graph[pos + i - 19],  i);
-//      delay(200);
-    } else {
-      writeBar(graph[pos + i + 1], i);
-//      delay(200);
-    }
-    i++;
-    
-  } 
-  pos++;
-}
-
-void writeBar(uint8_t height, uint8_t pos){
-  if (height <=7){
-    lcd.setCursor(pos, 3);
-    lcd.print(char(height));
-    lcd.setCursor(pos,2);
-    lcd.print(" ");
-  } else {
-    height -= 8;
-    lcd.setCursor(pos, 2);
-    lcd.print(char(height));
-    lcd.setCursor(pos, 3);
-    lcd.print(char(7));
-  }
   
-//motor controller speed is -180 to 180 closer to zero is faster for some reason
-mc1.write(mc1_speed);
-mc2.write(mc2_speed);
-mc3.write(mc3_speed);
-mc4.write(mc4_speed);
-}
