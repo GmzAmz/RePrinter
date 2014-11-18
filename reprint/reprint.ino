@@ -80,7 +80,7 @@ void loop()
   for ( uint8_t i = 15; i > 0; i--){
     updateBars(i);
   }
-  //motor controller speed is -180 to 180 closer to zero is faster for some reason
+   // if value is < 200 its treated as an angle, otherwise as pulse width in microseconds
   mc1.write(mc1_speed);
   mc2.write(mc2_speed);
   mc3.write(mc3_speed);
