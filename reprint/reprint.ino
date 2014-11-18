@@ -17,6 +17,17 @@ uint16_t graph[20]  = {0,0,0,0,0,
 //Servo heater;
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
+//Setup for motor controllers
+Servo mc1;
+Servo mc2;
+Servo mc3;
+Servo mc4;
+
+int mc1_speed = 0;
+int mc2_speed = 0;
+int mc3_speed = 0;
+int mc4_speed = 0;
+
 void setup()
 {
 //
@@ -147,6 +158,12 @@ void setup()
   writeBar(10,6);
   delay(1000);
 
+//Setup for motor controller pin out
+  mc1.attach(3);
+  mc2.attach(5);
+  mc3.attach(6);
+  mc4.attach(9);
+
 }
 
 void loop()
@@ -234,4 +251,10 @@ void writeBar(uint8_t height, uint8_t pos){
     lcd.setCursor(pos, 3);
     lcd.print(char(7));
   }
+  
+//motor controller speed is -180 to 180 closer to zero is faster for some reason
+mc1.write(mc1_speed);
+mc2.write(mc2_speed);
+mc3.write(mc3_speed);
+mc4.write(mc4_speed);
 }
