@@ -25,81 +25,162 @@ int mc1_speed = 10;
 int mc2_speed = 60;
 int mc3_speed = 100;
 int mc4_speed = 140;
+const uint8_t ROWS = 4;
+const uint8_t COLS = 3;
+char keys[ROWS][COLS] = {
+   {'1','2','3'}
+  ,{'4','5','6'}
+  ,{'7','8','9'}
+  ,{'*','0','#'}
+};
+byte rowPins[ROWS] = {
+  5,4,3,2}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {
+  8,7,6}; //connect to the column pinouts of the keypad
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+int screen = 0;
+String enteredTemp;
+uint16_t graph[20]  = {
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+uint8_t pos = 0;
 
 void setup()
 {
-//  heater.attach(6);
+  //  heater.attach(6);
   Serial.begin(9600);
   lcd.begin(20,4);
   setupLCDChars();
-  lcd.clear();
-  //--------------------
-  //--Pppp--Iiii--Dddd--
-  lcd.setCursor(0,1);
-  lcd.print("--PXXX--IXXX--DXXX--");
-  //--------------------
-  //ideal iiii curr cccc
-  lcd.setCursor(0,0);
-  lcd.print("ideal-XXXX-curr-XXXX");
+
   //Setup for motor controller pin out
   mc1.attach(3);
   mc2.attach(5);
   mc3.attach(6);
   mc4.attach(9);
+  keypad.addEventListener(keypadEvent);
 
 }
 
+int bar = 0;
+boolean barIncrease = true;
+
 void loop()
 {
-  randomizePIDT();
-  
-//  temp = analogRead(1);
-//  if (count < 10)
-//  {
-//    count ++;
-//    tempLCD = 0;//equation to convert thermo couple value to deg. this will be used to display on the LCD
-//  }
-//  else if (count > 10)
-//  {
-//    if (temp < lowTemp)
-//    {
-//      heat ++;
-//    }
-//    else if (temp > highTemp)
-//    {
-//      heat --;
-//    }
-//    count = 0;
-//    heater.write(heat);
-//  }
-
-
-  for ( uint8_t i = 0; i <= 15;i++){
-    updateBars(i);
+  //this section is example, remove when we get terhmocouple
+  if (barIncrease == true){
+    updateBars(bar);
+    bar++;
+  } 
+  else {
+    updateBars(bar);
+    bar--;
   }
-  for ( uint8_t i = 15; i > 0; i--){
-    updateBars(i);
+  if ( bar >= 15 ) {
+    barIncrease = false;
+  } 
+  else if ( bar == 0 ){
+    barIncrease = true;
   }
-   // if value is < 200 its treated as an angle, otherwise as pulse width in microseconds
+  // end section of example code
+  if ( screen == 0) {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("1: Enter info screen");
+    lcd.setCursor(0,1);
+    lcd.print("2: Set Temperature");
+    screen = 8;
+  }
+  if ( screen == 1 ) {
+    lcd.clear();
+    lcd.setCursor(0,1);
+    //         --------------------
+    //         --Pppp--Iiii--Dddd--
+    lcd.print("  P     I     D     ");
+    lcd.setCursor(0,0);
+    //         --------------------
+    //         ideal iiii curr cccc
+    lcd.print("ideal      curr     ");
+    screen = 2;
+  }
+  if (screen == 2) {
+    randomizePIDT();
+    showBargraph();
+    delay(200);
+    Serial.println(bar);
+  }
+  if (screen = 3){
+    lcd.clear();
+    lcd.setCursor(0,0);
+    delay(100);
+    //         --------------------
+    lcd.print(" Enter desired temp ");
+    lcd.setCursor(0,1);
+    delay(100);
+    //         --------------------
+    lcd.print("Temp:");
+    lcd.setCursor(0,4);
+    delay(100);
+    //         --------------------
+    lcd.print("Back: (*) Enter: (#)");
+    delay(100);
+    screen = 0;
+  }
+  if (screen = 4){
+    lcd.setCursor(6,1);
+    lcd.print(enteredTemp);
+  }
+  //motor controller speed is -180 to 180 closer to zero is faster for some reason
   mc1.write(mc1_speed);
   mc2.write(mc2_speed);
   mc3.write(mc3_speed);
   mc4.write(mc4_speed);
 }
 
+void keypadEvent(KeypadEvent key){
+  switch (keypad.getState()){
+  case PRESSED:
+    if (screen = 0){
+      if (key == '1'){
+        screen = 1;
+      }
+      if (key == '*') {
+        screen = 0;
+      }
+      if (key == '2') {
+        screen = 3;
+      }
+    }
+    if (screen = 3) {
+      if (key == '*') {
+        screen = 0;
+      } else if (key = '#') {
+        
+      } else {
+        addNum(key);
+      }
+    } 
+    break;
+  }
+}
+void addNum(KeypadEvent key) {
+  enteredTemp = enteredTemp + key;
+}
 void updateBars(uint8_t temp){
-  static uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  static uint8_t pos = 0;
-  if (pos > 19){ pos = 0;}
+  pos++;
+  if (pos > 19){ 
+    pos = 0;
+  }
   graph[pos] = temp;
+}
+
+void showBargraph(){
   for (int i = 0; i < 20;i++){
     if (pos + i >= 19){
       writeBar(graph[pos + i - 19],  i);
-    } else {
+    } 
+    else {
       writeBar(graph[pos + i + 1], i);
     }
-  } 
-  pos++;
+  }
 }
 
 void writeBar(uint8_t height, uint8_t pos){
@@ -108,7 +189,8 @@ void writeBar(uint8_t height, uint8_t pos){
     lcd.print(char(height));
     lcd.setCursor(pos,2);
     lcd.print(" ");
-  } else {
+  } 
+  else {
     height -= 8;
     lcd.setCursor(pos, 2);
     lcd.print(char(height));
@@ -238,4 +320,3 @@ void setupLCDChars(){
   };
   lcd.createChar(7,L8);
 }
-  
