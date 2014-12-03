@@ -1,30 +1,10 @@
 #include <Keypad.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-//#include <Servo.h>
 
-#define BACKLIGHT_PIN     13
-
-
-//int temp;
-//int tempLCD;
-//int heat = 20;//start at a mid range to start the heating
-//const int lowTemp = 1;//min of temp range to extrude
-//const int highTemp = 3;//max of temp range to extrude
-//int count = 0;
-//Servo heater;
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
-//Setup for motor controllers
-//Servo mc1;
-//Servo mc2;
-//Servo mc3;
-//Servo mc4;
-
-//int mc1_speed = 10;
-//int mc2_speed = 60;
-//int mc3_speed = 100;
-//int mc4_speed = 140;
+//begin keypad stuff
 const uint8_t ROWS = 4;
 const uint8_t COLS = 3;
 char keys[ROWS][COLS] = {
@@ -33,51 +13,43 @@ char keys[ROWS][COLS] = {
   ,{'7','8','9'  }
   ,{'*','0','#'  }
 };
-byte rowPins[ROWS] = {5,4,3,2}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {8,7,6}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = {5,4,3,2};
+byte colPins[COLS] = {8,7,6};
 Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+//end keypad stuff
+
 int screen = 0;
 String enteredTemp;
+
+//begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 uint8_t pos = 0;
+// end bar graph variables
 
 void setup()
 {
-//  heater.attach(6);
   Serial.begin(9600);
   lcd.begin(20,4);
   setupLCDChars();
-
-//  Setup for motor controller pin out
-//  mc1.attach(3);
-//  mc2.attach(5);
-//  mc3.attach(6);
-//  mc4.attach(9);
+  
   pad.addEventListener(keypadEvent);
-
 }
-
-int bar = 0;
-boolean barIncrease = true;
 
 void loop()
 {
-//  Serial.println(screen);
-  char key = (char)pad.getKey;
-//  if (key) {
-//    Serial.println();
-//  }
-  //this section is example, remove when we get thermocouple
-  // end section of example code
-  if ( screen == 0) {
+  if(pad.updateList()) {
+    Serial.println("true");
+  }
+  switch (screen){
+  case 0:
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("1: Enter info screen");
     lcd.setCursor(0,1);
     lcd.print("2: Set Temperature");
     screen = 8;
-  }
-  if ( screen == 1 ) {
+    break;
+  case 1:
     lcd.clear();
     lcd.setCursor(0,1);
     //         --------------------
@@ -88,14 +60,15 @@ void loop()
     //         ideal iiii curr cccc
     lcd.print("ideal      curr     ");
     screen = 2;
-  }
-  if (screen == 2) {
+    break;
+  
+  case 2:
     randomizePIDT();
     showBargraph();
     delay(200);
-    //    Serial.println(bar);
-  }
-  if (screen == 3){
+    break;
+    
+  case 3:
     lcd.clear();
     lcd.setCursor(0,0);
     delay(100);
@@ -111,53 +84,54 @@ void loop()
     lcd.print("Back: (*) Enter: (#)");
     delay(100);
     screen = 4;
-  }
-  if (screen == 4){
+    break;
+    
+  case 4:
     lcd.setCursor(6,1);
     lcd.print(enteredTemp);
+    break;
   }
-  //motor controller speed is -180 to 180 closer to zero is faster for some reason
-//  mc1.write(mc1_speed);
-//  mc2.write(mc2_speed);
-//  mc3.write(mc3_speed);
-//  mc4.write(mc4_speed);
+  
 	incDecBar();
 }
 
 void keypadEvent(KeypadEvent key){
-  Serial.println("pressed");
-  switch (pad.getState()){
-  case PRESSED:
-  //enter info screen
-      if (key == '1'){
-        screen = 1;
-      }
-      
-      if (key == '*') {
-        screen = 0;
-      }
-      if (key == '2') {
-        screen = 3;
-      }
-  break;
+	Serial.println("pressed");
+	switch (pad.getState()){
+		case PRESSED:
+		//enter info screen
+		if (key == '1'){
+			screen = 1;
+		}
+		//go back to main menu
+		if (key == '*') {
+			screen = 0;
+		}
+		//go to temperature adjust screen
+		if (key == '2') {
+			screen = 3;
+		}
+		break;
   }
 }
 
 void incDecBar(){
-  if (barIncrease == true){
-    updateBars(bar);
-    bar++;
-  } 
-  else {
-    updateBars(bar);
-    bar--;
-  }
-  if ( bar >= 15 ) {
-    barIncrease = false;
-  } 
-  else if ( bar == 0 ){
-    barIncrease = true;
-  }
+	static int bar = 0;
+	static boolean barIncrease = true;
+	if (barIncrease == true){
+		updateBars(bar);
+		bar++;
+	} 
+	else {
+		updateBars(bar);
+		bar--;
+	}
+	if ( bar >= 15 ) {
+		barIncrease = false;
+	} 
+	else if ( bar == 0 ){
+		barIncrease = true;
+	}
 }
 
 void updateBars(uint8_t temp){
