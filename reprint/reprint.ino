@@ -1,7 +1,7 @@
 #include <Keypad.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include <Servo.h>
+//#include <Servo.h>
 
 #define BACKLIGHT_PIN     13
 
@@ -16,47 +16,44 @@
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
 //Setup for motor controllers
-Servo mc1;
-Servo mc2;
-Servo mc3;
-Servo mc4;
+//Servo mc1;
+//Servo mc2;
+//Servo mc3;
+//Servo mc4;
 
-int mc1_speed = 10;
-int mc2_speed = 60;
-int mc3_speed = 100;
-int mc4_speed = 140;
+//int mc1_speed = 10;
+//int mc2_speed = 60;
+//int mc3_speed = 100;
+//int mc4_speed = 140;
 const uint8_t ROWS = 4;
 const uint8_t COLS = 3;
 char keys[ROWS][COLS] = {
-   {'1','2','3'}
-  ,{'4','5','6'}
-  ,{'7','8','9'}
-  ,{'*','0','#'}
+  {'1','2','3'  }
+  ,{'4','5','6'  }
+  ,{'7','8','9'  }
+  ,{'*','0','#'  }
 };
-byte rowPins[ROWS] = {
-  5,4,3,2}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {
-  8,7,6}; //connect to the column pinouts of the keypad
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+byte rowPins[ROWS] = {5,4,3,2}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {8,7,6}; //connect to the column pinouts of the keypad
+Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 int screen = 0;
 String enteredTemp;
-uint16_t graph[20]  = {
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 uint8_t pos = 0;
 
 void setup()
 {
-  //  heater.attach(6);
+//  heater.attach(6);
   Serial.begin(9600);
   lcd.begin(20,4);
   setupLCDChars();
 
-  //Setup for motor controller pin out
-  mc1.attach(3);
-  mc2.attach(5);
-  mc3.attach(6);
-  mc4.attach(9);
-  keypad.addEventListener(keypadEvent);
+//  Setup for motor controller pin out
+//  mc1.attach(3);
+//  mc2.attach(5);
+//  mc3.attach(6);
+//  mc4.attach(9);
+  pad.addEventListener(keypadEvent);
 
 }
 
@@ -65,21 +62,12 @@ boolean barIncrease = true;
 
 void loop()
 {
-  //this section is example, remove when we get terhmocouple
-  if (barIncrease == true){
-    updateBars(bar);
-    bar++;
-  } 
-  else {
-    updateBars(bar);
-    bar--;
-  }
-  if ( bar >= 15 ) {
-    barIncrease = false;
-  } 
-  else if ( bar == 0 ){
-    barIncrease = true;
-  }
+//  Serial.println(screen);
+  char key = (char)pad.getKey;
+//  if (key) {
+//    Serial.println();
+//  }
+  //this section is example, remove when we get thermocouple
   // end section of example code
   if ( screen == 0) {
     lcd.clear();
@@ -105,9 +93,9 @@ void loop()
     randomizePIDT();
     showBargraph();
     delay(200);
-    Serial.println(bar);
+    //    Serial.println(bar);
   }
-  if (screen = 3){
+  if (screen == 3){
     lcd.clear();
     lcd.setCursor(0,0);
     delay(100);
@@ -122,48 +110,56 @@ void loop()
     //         --------------------
     lcd.print("Back: (*) Enter: (#)");
     delay(100);
-    screen = 0;
+    screen = 4;
   }
-  if (screen = 4){
+  if (screen == 4){
     lcd.setCursor(6,1);
     lcd.print(enteredTemp);
   }
   //motor controller speed is -180 to 180 closer to zero is faster for some reason
-  mc1.write(mc1_speed);
-  mc2.write(mc2_speed);
-  mc3.write(mc3_speed);
-  mc4.write(mc4_speed);
+//  mc1.write(mc1_speed);
+//  mc2.write(mc2_speed);
+//  mc3.write(mc3_speed);
+//  mc4.write(mc4_speed);
+	incDecBar();
 }
 
 void keypadEvent(KeypadEvent key){
-  switch (keypad.getState()){
+  Serial.println("pressed");
+  switch (pad.getState()){
   case PRESSED:
-    if (screen = 0){
+  //enter info screen
       if (key == '1'){
         screen = 1;
       }
+      
       if (key == '*') {
         screen = 0;
       }
       if (key == '2') {
         screen = 3;
       }
-    }
-    if (screen = 3) {
-      if (key == '*') {
-        screen = 0;
-      } else if (key = '#') {
-        
-      } else {
-        addNum(key);
-      }
-    } 
-    break;
+  break;
   }
 }
-void addNum(KeypadEvent key) {
-  enteredTemp = enteredTemp + key;
+
+void incDecBar(){
+  if (barIncrease == true){
+    updateBars(bar);
+    bar++;
+  } 
+  else {
+    updateBars(bar);
+    bar--;
+  }
+  if ( bar >= 15 ) {
+    barIncrease = false;
+  } 
+  else if ( bar == 0 ){
+    barIncrease = true;
+  }
 }
+
 void updateBars(uint8_t temp){
   pos++;
   if (pos > 19){ 
@@ -320,3 +316,4 @@ void setupLCDChars(){
   };
   lcd.createChar(7,L8);
 }
+
