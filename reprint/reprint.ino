@@ -20,6 +20,8 @@ Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 int screen = 0;
 String enteredTemp;
+int goalTemp = 0;
+int currTemp = 0;
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -37,9 +39,6 @@ void setup()
 
 void loop()
 {
-  if(pad.updateList()) {
-    Serial.println("true");
-  }
   switch (screen){
   case 0:
     lcd.clear();
@@ -92,6 +91,8 @@ void loop()
     break;
   }
   
+  char key = pad.getKey();
+  
 	incDecBar();
 }
 
@@ -100,18 +101,32 @@ void keypadEvent(KeypadEvent key){
 	switch (pad.getState()){
 		case PRESSED:
 		//enter info screen
-		if (key == '1'){
-			screen = 1;
-		}
-		//go back to main menu
-		if (key == '*') {
-			screen = 0;
-		}
-		//go to temperature adjust screen
-		if (key == '2') {
-			screen = 3;
-		}
-		break;
+      if (screen == 0 || screen == 8) {
+        if (key == '1') {
+          screen = 1;
+          break;
+        } else if (key == '2') {
+          screen = 3;
+          break;
+        }
+      } else if (screen == 2) {
+        if (key == '*'){
+          screen = 0;
+          break;
+        }
+      } else if (screen == 4){
+        if (key != '*' || key != '#') {
+          enteredTemp += key;
+          break;
+        } else if (key == '#') {
+          goalTemp = enteredTemp.toInt;
+          break;
+        } else {
+          screen = 0;
+          break;
+        }
+      }
+      break;
   }
 }
 
