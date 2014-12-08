@@ -183,23 +183,7 @@ void keypadEvent(KeypadEvent key){
         updatePIDs(key);
         break;
       }
-
-        //enter D
-        if (key != '*' && key != '#') {
-          entD += key;
-          break;
-        } else if (key == '#') {
-          setD = entD.toInt();
-          screen = 0;
-          break;
-        } else if (key == '*') {
-          entD.remove(entD.length() - 1);
-          break;
-        } else {
-          Serial.println("Something went wrong");
-          break;
-        }
-      }
+  }
 }
 
 void updatePIDs(KeypadEvent key){
