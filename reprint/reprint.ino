@@ -19,7 +19,10 @@ Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 //end keypad stuff
 
 int screen = 0;
-String enteredTemp;
+String enteredTemp,entP,entI,entD;
+int setP = 0;
+int setI = 0;
+int setD = 0;
 int goalTemp = 0;
 int currTemp = 0;
 
@@ -39,97 +42,193 @@ void setup()
 
 void loop()
 {
+  Serial.println(screen);
   switch (screen){
-  case 0:
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("1: Enter info screen");
-    lcd.setCursor(0,1);
-    lcd.print("2: Set Temperature");
-    screen = 8;
-    break;
-  case 1:
-    lcd.clear();
-    lcd.setCursor(0,1);
-    //         --------------------
-    //         --Pppp--Iiii--Dddd--
-    lcd.print("  P     I     D     ");
-    lcd.setCursor(0,0);
-    //         --------------------
-    //         ideal iiii curr cccc
-    lcd.print("ideal      curr     ");
-    screen = 2;
-    break;
-  
-  case 2:
-    randomizePIDT();
-    showBargraph();
-    delay(200);
-    break;
+    case 0:
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("1: Enter info screen");
+      lcd.setCursor(0,1);
+      lcd.print("2: Set temperature");
+      lcd.setCursor(0,2);
+      lcd.print("3: Edit PID values");
+      screen = 42;
+      break;
+    case 1:
+      lcd.clear();
+      lcd.setCursor(0,1);
+      //         --------------------
+      //         --Pppp--Iiii--Dddd--
+      lcd.print("  P     I     D     ");
+      lcd.setCursor(0,0);
+      //         --------------------
+      //         ideal iiii curr cccc
+      lcd.print("ideal      curr     ");
+      screen = 2;
+      break;
     
-  case 3:
-    lcd.clear();
-    lcd.setCursor(0,0);
-    delay(100);
-    //         --------------------
-    lcd.print(" Enter desired temp ");
-    lcd.setCursor(0,1);
-    delay(100);
-    //         --------------------
-    lcd.print("Temp:");
-    lcd.setCursor(0,4);
-    delay(100);
-    //         --------------------
-    lcd.print("Back: (*) Enter: (#)");
-    delay(100);
-    screen = 4;
-    break;
-    
-  case 4:
-    lcd.setCursor(6,1);
-    lcd.print(enteredTemp);
-    break;
+    case 2:
+      randomizePIDT();
+      showBargraph();
+      break;
+      
+    case 3:
+      lcd.clear();
+      lcd.setCursor(0,0);
+      //         --------------------
+      lcd.print(" Enter desired temp ");
+      lcd.setCursor(0,1);
+      //         --------------------
+      lcd.print("Temp:");
+      lcd.setCursor(0,4);
+      //         --------------------
+      lcd.print("Back: (*) Enter: (#)");
+      screen = 4;
+      break;
+    case 4:
+      lcd.setCursor(6,1);
+      lcd.print(enteredTemp);
+      break;
+    case 5:
+      lcd.clear();
+      lcd.setCursor(0,0);
+      delay(100);
+      //         --------------------
+      lcd.print("  Enter PID values ");
+      lcd.setCursor(0,1);
+      delay(100);
+      //         --------------------
+      lcd.print(" P:    I:    D:     ");
+      lcd.setCursor(0,4);
+      delay(100);
+      //         --------------------
+      lcd.print("Back: (*) Enter: (#)");
+      delay(100);
+      screen = 6;
+      break;
+    case 6:
+      lcd.setCursor(3,1);
+      lcd.print("    ");
+      lcd.setCursor(3,1);
+      lcd.print(entP);
+      break;
+    case 7:
+      lcd.setCursor(3,1);
+      lcd.print("    ");
+      lcd.setCursor(3,1);
+      lcd.print(entP);
+      break;
+    case 8:
+      lcd.setCursor(3,1);
+      lcd.print("    ");
+      lcd.setCursor(3,1);
+      lcd.print(entP);
+      break;
   }
-  
   char key = pad.getKey();
   
 	incDecBar();
 }
 
 void keypadEvent(KeypadEvent key){
-	Serial.println("pressed");
-	switch (pad.getState()){
-		case PRESSED:
-		//enter info screen
-      if (screen == 0 || screen == 8) {
+  switch (pad.getState()){
+    case PRESSED:
+      Serial.println(key);
+      Serial.println("key");
+      //enter info screen
+      if (screen == 0 || screen == 42) {
+        Serial.println("Screen = 42 || 0");
         if (key == '1') {
           screen = 1;
           break;
         } else if (key == '2') {
           screen = 3;
           break;
+        } else if (key == '3') {
+          screen = 5;
+          break;
         }
-      } else if (screen == 2) {
+      }
+      if (screen == 2) {
+        Serial.println("ent");
         if (key == '*'){
-          screen = 0;
-          break;
-        }
-      } else if (screen == 4){
-        if (key != '*' || key != '#') {
-          enteredTemp += key;
-          break;
-        } else if (key == '#') {
-          goalTemp = enteredTemp.toInt;
-          break;
-        } else {
+          Serial.println("ered");
           screen = 0;
           break;
         }
       }
-      break;
-  }
+      if (screen == 4){
+        if (key != '*' && key != '#') {
+          if (enteredTemp.length() < 7) {
+            enteredTemp += key;
+            break;
+          } else {
+            break;
+          }
+        } else if (key == '#') {
+          goalTemp = enteredTemp.toInt();
+          screen = 0;
+          break;
+        } else if (key == '*') {
+          enteredTemp.remove(enteredTemp.length() - 1);
+          lcd.setCursor(enteredTemp.length() + 6,1);
+          lcd.print(" ");
+          break;
+        } else {
+          Serial.println("Something went wrong");
+          break;
+        }
+      }
+      if (screen == 6) {
+        updatePIDs(key);
+        break;
+      }
+
+        //enter D
+        if (key != '*' && key != '#') {
+          entD += key;
+          break;
+        } else if (key == '#') {
+          setD = entD.toInt();
+          screen = 0;
+          break;
+        } else if (key == '*') {
+          entD.remove(entD.length() - 1);
+          break;
+        } else {
+          Serial.println("Something went wrong");
+          break;
+        }
+      }
 }
 
+void updatePIDs(KeypadEvent key){
+  static int num = 0;
+  static String PID[] = {"","",""};
+  static int PIDpos[] = {3,9,15};
+  if (key == '*') {
+    if (PID[num].length() != 0){
+      PID[num].remove(PID[num].length() - 1);
+      lcd.setCursor(PIDpos[num] + PID[num].length(),1);
+      lcd.print(" ");
+    } else if (num != 0){
+      num--;
+    } else {
+      screen = 0;
+      num = 0;
+    }
+  } else if (key == '#') {
+    if (num != 2) {
+      num++;
+    } else {
+      num = 0;
+      //insert setPID methods here
+      screen = 0;
+    }
+  } else {
+    PID[num] += key;
+  }
+}
 void incDecBar(){
 	static int bar = 0;
 	static boolean barIncrease = true;
@@ -201,7 +300,7 @@ void randomizePIDT(){
   lcd.print(i3);
   //set Ideal temp
   lcd.setCursor(6,0);
-  lcd.print(t1);
+  lcd.print(goalTemp);
   //set current temp
   lcd.setCursor(16,0);
   lcd.print(t2);
