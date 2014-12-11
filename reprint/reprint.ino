@@ -8,7 +8,7 @@ LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I
 const uint8_t ROWS = 4;
 const uint8_t COLS = 3;
 char keys[ROWS][COLS] = {
-  {'1','2','3'  }
+   {'1','2','3'  }
   ,{'4','5','6'  }
   ,{'7','8','9'  }
   ,{'*','0','#'  }
@@ -28,6 +28,7 @@ int currTemp = 0;
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+String PID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
@@ -108,21 +109,6 @@ void loop()
       break;
     case 6:
       lcd.setCursor(3,1);
-      lcd.print("    ");
-      lcd.setCursor(3,1);
-      lcd.print(entP);
-      break;
-    case 7:
-      lcd.setCursor(3,1);
-      lcd.print("    ");
-      lcd.setCursor(3,1);
-      lcd.print(entP);
-      break;
-    case 8:
-      lcd.setCursor(3,1);
-      lcd.print("    ");
-      lcd.setCursor(3,1);
-      lcd.print(entP);
       break;
   }
   char key = pad.getKey();
@@ -188,7 +174,6 @@ void keypadEvent(KeypadEvent key){
 
 void updatePIDs(KeypadEvent key){
   static int num = 0;
-  static String PID[] = {"","",""};
   static int PIDpos[] = {3,9,15};
   if (key == '*') {
     if (PID[num].length() != 0){
@@ -210,7 +195,11 @@ void updatePIDs(KeypadEvent key){
       screen = 0;
     }
   } else {
-    PID[num] += key;
+    if (PID[num].length() <= 4) {
+      PID[num] += key;
+      lcd.setCursor(PIDpos[num],1);
+      lcd.print(PID[num]);
+    }
   }
 }
 void incDecBar(){
@@ -268,20 +257,16 @@ void writeBar(uint8_t height, uint8_t pos){
 }
 
 void randomizePIDT(){
-  byte i1 = random();
-  byte i2 = random();
-  byte i3 = random();
-  byte t1 = random();
   byte t2 = random();
   //setP
   lcd.setCursor(3,1);
-  lcd.print(i1);
+  lcd.print(PID[0]);
   //setI
   lcd.setCursor(9,1);
-  lcd.print(i2);
+  lcd.print(PID[1]);
   //setD
   lcd.setCursor(15,1);
-  lcd.print(i3);
+  lcd.print(PID[2]);
   //set Ideal temp
   lcd.setCursor(6,0);
   lcd.print(goalTemp);
@@ -388,4 +373,3 @@ void setupLCDChars(){
   };
   lcd.createChar(7,L8);
 }
-
