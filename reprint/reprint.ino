@@ -1,6 +1,7 @@
 #include <Keypad.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+#include <MAX6675.h>
 
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
@@ -26,6 +27,15 @@ int setD = 0;
 int goalTemp = 0;
 int currTemp = 0;
 
+int LED1 = 9;             // Status LED Pin
+int CS = 10;             // CS pin on MAX6675
+int SO = 12;              // SO pin of MAX6675
+int sCK = 13;             // SCK pin of MAX6675
+int units = 2;            // Units to readout temp (0 = raw, 1 = ˚C, 2 = ˚F)
+float temperature = 0.0;  // Temperature output variable
+
+MAX6675 temp(CS,SO,SCK,units);
+
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 String PID[] = {"","",""};
@@ -42,8 +52,8 @@ void setup()
 }
 
 void loop()
-{
-  Serial.println(screen);
+{ 
+  
   switch (screen){
     case 0:
       lcd.clear();
@@ -69,8 +79,22 @@ void loop()
       break;
     
     case 2:
-      randomizePIDT();
-      showBargraph();
+      //setP
+      lcd.setCursor(3,1);
+      lcd.print(PID[0]);
+      //setI
+      lcd.setCursor(9,1);
+      lcd.print(PID[1]);
+      //setD
+      lcd.setCursor(15,1);
+      lcd.print(PID[2]);
+      //set Ideal temp
+      lcd.setCursor(6,0);
+      lcd.print(goalTemp);
+      //set current temp
+      lcd.setCursor(16,0);
+      lcd.print(temp.read_temp());
+      //showBargraph();
       break;
       
     case 3:
@@ -254,25 +278,6 @@ void writeBar(uint8_t height, uint8_t pos){
     lcd.setCursor(pos, 3);
     lcd.print(char(7));
   }
-}
-
-void randomizePIDT(){
-  byte t2 = random();
-  //setP
-  lcd.setCursor(3,1);
-  lcd.print(PID[0]);
-  //setI
-  lcd.setCursor(9,1);
-  lcd.print(PID[1]);
-  //setD
-  lcd.setCursor(15,1);
-  lcd.print(PID[2]);
-  //set Ideal temp
-  lcd.setCursor(6,0);
-  lcd.print(goalTemp);
-  //set current temp
-  lcd.setCursor(16,0);
-  lcd.print(t2);
 }
 
 void setupLCDChars(){
