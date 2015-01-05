@@ -66,7 +66,8 @@ uint8_t pos = 0;
 void setup()
 {
   //initialize the variables we're linked to
-  Input = analogRead(0); //Input from thermsistor
+  tempSensor = temp.read_temp();
+  Input = tempSensor; //Input from thermsistor
   Setpoint = goalTemp; //This would be the ideal temperature we would like to reach from thermsistor
   myPID.SetMode(AUTOMATIC);  //turn the PID on
   
@@ -85,8 +86,8 @@ void loop()
 { 
   tempSensor = temp.read_temp();
   Input = tempSensor; //pid input
-  myPID.Compute(); //pid compute
   Setpoint = goalTemp;
+  myPID.Compute(); //pid compute
   
   heat_level = (Output/2.834); //conversion from 255 to 90
   
