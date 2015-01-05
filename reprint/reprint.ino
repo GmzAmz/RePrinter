@@ -67,7 +67,7 @@ void setup()
 {
   //initialize the variables we're linked to
   tempSensor = temp.read_temp();
-  Input = tempSensor; //Input from thermsistor
+  Input = tempSensor; //Input from thermocouple
   Setpoint = goalTemp; //This would be the ideal temperature we would like to reach from thermsistor
   myPID.SetMode(AUTOMATIC);  //turn the PID on
   
@@ -96,8 +96,8 @@ void loop()
   heater_offset = (heat_level+90);  //Conversion for servo to motor controller
   
   spooler.write(spooler_offset);  //Writes the spooler speed
-  auger.write(auger_offset);  //Writes the auger speed
-  heater.write(heater_offset);  //Writes the heater speed
+  auger.write(auger_offset);      //Writes the auger speed
+  heater.write(heater_offset);    //Writes the heater speed
   
   switch (screen){
     case 0:
@@ -289,7 +289,6 @@ void incDecBar(){
 		barIncrease = true;
 	}
 }
-
 void updateBars(uint8_t temp){
   pos++;
   if (pos > 19){ 
