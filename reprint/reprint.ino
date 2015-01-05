@@ -5,21 +5,18 @@
 #include <Servo.h>
 #include <PID_v1.h>
 
-
-
 Servo spooler;  // a maximum of eight servo objects can be created 
 Servo auger;
 Servo heater;                
  
-// Change this value to change the speed, zero is zero and positive in orward and negative is backward
-int spooler_speed = 0;   
+int spooler_speed(0);   
 int auger_speed(10);  
 int heat_level(0);
 
 int tempSensor = 0;
 
 //These are all the offsets
-int spooler_offset = 0;
+int spooler_offset(0);
 int auger_offset(0);
 int heater_offset(0);
 
@@ -62,6 +59,7 @@ String PID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
+//PID Setup, the current temp and goal temp are updated directly in myPID
 double Output; //Define Variables we'll be connecting to
 PID myPID(&currTemp, &Output, &goalTemp,2,5,1, DIRECT); //Specify the links and initial tuning parameters
 
@@ -88,8 +86,7 @@ void loop()
   currTemp = temp.read_temp();
   myPID.Compute(); //pid compute
   
-  heat_level = (Output/2.834); //conversion from 255 to 90
-  
+  heat_level = (Output/2.834); //conversion from 255 to 90 from PID
   spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
   auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
   heater_offset = (heat_level+90);  //Conversion for servo to motor controller
