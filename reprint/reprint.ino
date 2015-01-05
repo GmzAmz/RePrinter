@@ -5,8 +5,7 @@
 #include <Servo.h>
 #include <PID_v1.h>
 
-double Setpoint, Input, Output; //Define Variables we'll be connecting to
-PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT); //Specify the links and initial tuning parameters
+
 
 Servo spooler;  // a maximum of eight servo objects can be created 
 Servo auger;
@@ -63,17 +62,18 @@ String PID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
+double Output; //Define Variables we'll be connecting to
+PID myPID(&currTemp, &Output, &goalTemp,2,5,1, DIRECT); //Specify the links and initial tuning parameters
+
 void setup()
 {
   //initialize the variables we're linked to
-  tempSensor = temp.read_temp();
-  Input = tempSensor; //Input from thermocouple
-  Setpoint = goalTemp; //This would be the ideal temperature we would like to reach from thermsistor
+  currTemp = temp.read_temp();
   myPID.SetMode(AUTOMATIC);  //turn the PID on
   
-  spooler.attach(11); //attaches spooler motor controller to pin 11
+  spooler.attach(9); //attaches spooler motor controller to pin 11
   auger.attach(21);  //attaches auger motor controller to pin 6
-  heater.attach(9);  //attaches heater motor controller to pin 5
+  heater.attach(11);  //attaches heater motor controller to pin 5
  
   Serial.begin(9600);
   lcd.begin(20,4);
@@ -84,9 +84,8 @@ void setup()
 
 void loop()
 { 
-  tempSensor = temp.read_temp();
-  Input = tempSensor; //pid input
-  Setpoint = goalTemp;
+  
+  currTemp = temp.read_temp();
   myPID.Compute(); //pid compute
   
   heat_level = (Output/2.834); //conversion from 255 to 90
