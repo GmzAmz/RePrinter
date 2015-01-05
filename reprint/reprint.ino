@@ -2,6 +2,8 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <MAX6675.h>
+#include <Servo.h>
+#include <PID_v1.h>
 
 LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
@@ -27,7 +29,6 @@ int setD = 0;
 int goalTemp = 0;
 int currTemp = 0;
 
-int LED1 = 9;             // Status LED Pin
 int CS = 10;             // CS pin on MAX6675
 int SO = 12;              // SO pin of MAX6675
 int sCK = 13;             // SCK pin of MAX6675
@@ -35,6 +36,8 @@ int units = 2;            // Units to readout temp (0 = raw, 1 = ˚C, 2 = ˚F)
 float temperature = 0.0;  // Temperature output variable
 
 MAX6675 temp(CS,SO,SCK,units);
+
+Servo spooler, fan, puller, auger, heater;
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -53,7 +56,7 @@ void setup()
 
 void loop()
 { 
-  
+  Serial.println("loop");
   switch (screen){
     case 0:
       lcd.clear();
