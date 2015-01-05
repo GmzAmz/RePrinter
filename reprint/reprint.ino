@@ -5,7 +5,28 @@
 #include <Servo.h>
 #include <PID_v1.h>
 
-//keypad stuff
+double Setpoint, Input, Output; //Define Variables we'll be connecting to
+PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT); //Specify the links and initial tuning parameters
+
+Servo spooler;  // a maximum of eight servo objects can be created 
+Servo auger;
+Servo heater;                
+ 
+// Change this value to change the speed, zero is zero and positive in orward and negative is backward
+int spooler_speed = 0;   
+int auger_speed(10);  
+int heat_level(0);
+
+int tempSensor = 0;
+
+//These are all the offsets
+int spooler_offset = 0;
+int auger_offset(0);
+int heater_offset(0);
+
+LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+
+//begin keypad stuff
 const uint8_t ROWS = 4;
 const uint8_t COLS = 3;
 char keys[ROWS][COLS] = {
@@ -17,9 +38,8 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {5,4,3,2};
 byte colPins[COLS] = {8,7,6};
 Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+//end keypad stuff
 
-//misc display stuff
-LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 int screen = 0;
 String enteredTemp,entP,entI,entD;
 int setP = 0;
@@ -28,16 +48,14 @@ int setD = 0;
 int goalTemp = 0;
 int currTemp = 0;
 
-//Thermocouple object
+int LED1 = 9;             // Status LED Pin
 int CS = 10;             // CS pin on MAX6675
 int SO = 12;              // SO pin of MAX6675
 int sCK = 13;             // SCK pin of MAX6675
 int units = 2;            // Units to readout temp (0 = raw, 1 = ˚C, 2 = ˚F)
 float temperature = 0.0;  // Temperature output variable
+
 MAX6675 temp(CS,SO,SCK,units);
-
-
-Servo spooler, fan, puller, auger, heater;
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -45,12 +63,18 @@ String PID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
-//PID object
-double Setpoint, Input, Output;
-PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
-
 void setup()
 {
+  //initialize the variables we're linked to
+  tempSensor = temp.read_temp();
+  Input = tempSensor; //Input from thermsistor
+  Setpoint = goalTemp; //This would be the ideal temperature we would like to reach from thermsistor
+  myPID.SetMode(AUTOMATIC);  //turn the PID on
+  
+  spooler.attach(11); //attaches spooler motor controller to pin 11
+  auger.attach(21);  //attaches auger motor controller to pin 6
+  heater.attach(9);  //attaches heater motor controller to pin 5
+ 
   Serial.begin(9600);
   lcd.begin(20,4);
   setupLCDChars();
@@ -60,7 +84,21 @@ void setup()
 
 void loop()
 { 
-  Serial.println("loop");
+  tempSensor = temp.read_temp();
+  Input = tempSensor; //pid input
+  Setpoint = goalTemp;
+  myPID.Compute(); //pid compute
+  
+  heat_level = (Output/2.834); //conversion from 255 to 90
+  
+  spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
+  auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
+  heater_offset = (heat_level+90);  //Conversion for servo to motor controller
+  
+  spooler.write(spooler_offset);  //Writes the spooler speed
+  auger.write(auger_offset);  //Writes the auger speed
+  heater.write(heater_offset);  //Writes the heater speed
+  
   switch (screen){
     case 0:
       lcd.clear();
@@ -142,7 +180,6 @@ void loop()
       lcd.setCursor(3,1);
       break;
   }
-  
   char key = pad.getKey();
   
 	incDecBar();
@@ -224,7 +261,6 @@ void updatePIDs(KeypadEvent key){
     } else {
       num = 0;
       //insert setPID methods here
-      myPID.setTunings(PID[0],PID[1],PID[2]);
       screen = 0;
     }
   } else {
