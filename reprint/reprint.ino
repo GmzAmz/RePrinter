@@ -41,8 +41,8 @@ String enteredTemp,entP,entI,entD;
 int setP = 0;
 int setI = 0;
 int setD = 0;
-int goalTemp = 0;
-int currTemp = 0;
+double goalTemp = 0;
+double currTemp = 0;
 
 int LED1 = 9;             // Status LED Pin
 int CS = 10;             // CS pin on MAX6675
@@ -55,13 +55,13 @@ MAX6675 temp(CS,SO,SCK,units);
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//String PID[] = {"","",""};
+String sPID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
 //PID Setup, the current temp and goal temp are updated directly in myPID
 double Output; //Define Variables we'll be connecting to
-PID myPID(&currTemp, &Output, &goalTemp,2,5,1, DIRECT); //Specify the links and initial tuning parameters
+PID myPID(&currTemp, &Output, &goalTemp,(double)2,(double)5,(double)1, DIRECT); //Specify the links and initial tuning parameters
 
 void setup()
 {
@@ -122,13 +122,13 @@ void loop()
     case 2:
       //setP
       lcd.setCursor(3,1);
-      lcd.print(PID[0]);
+      lcd.print(sPID[0]);
       //setI
       lcd.setCursor(9,1);
-      lcd.print(PID[1]);
+      lcd.print(sPID[1]);
       //setD
       lcd.setCursor(15,1);
-      lcd.print(PID[2]);
+      lcd.print(sPID[2]);
       //set Ideal temp
       lcd.setCursor(6,0);
       lcd.print(goalTemp);
@@ -241,9 +241,9 @@ void updatePIDs(KeypadEvent key){
   static int num = 0;
   static int PIDpos[] = {3,9,15};
   if (key == '*') {
-    if (PID[num].length() != 0){
-      PID[num].remove(PID[num].length() - 1);
-      lcd.setCursor(PIDpos[num] + PID[num].length(),1);
+    if (sPID[num].length() != 0){
+      sPID[num].remove(sPID[num].length() - 1);
+      lcd.setCursor(PIDpos[num] + sPID[num].length(),1);
       lcd.print(" ");
     } else if (num != 0){
       num--;
@@ -260,10 +260,10 @@ void updatePIDs(KeypadEvent key){
       screen = 0;
     }
   } else {
-    if (PID[num].length() <= 4) {
-      PID[num] += key;
+    if (sPID[num].length() <= 4) {
+      sPID[num] += key;
       lcd.setCursor(PIDpos[num],1);
-      lcd.print(PID[num]);
+      lcd.print(sPID[num]);
     }
   }
 }
