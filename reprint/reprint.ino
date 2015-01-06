@@ -55,7 +55,7 @@ MAX6675 temp(CS,SO,SCK,units);
 
 //begin bar graph variables
 uint16_t graph[20]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-String PID[] = {"","",""};
+//String PID[] = {"","",""};
 uint8_t pos = 0;
 // end bar graph variables
 
