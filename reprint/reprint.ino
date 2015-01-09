@@ -90,19 +90,17 @@ void loop()
   myPID.Compute(); //pid compute
   
   heat_level = (Output/2.834); //conversion from 255 to 90 from PID
-  
+  Serial.println(heat_level);
   analogWrite(heatPin, heat_level);
   
   spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
   auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
   heater_offset = (heat_level+90);  //Conversion for servo to motor controller
   
-  spooler.write(spooler_offset);  //Writes the spooler speed
-  auger.write(auger_offset);      //Writes the auger speed
-  heater.write(heater_offset);    //Writes the heater speed
-  
-  Serial.println(heater_offset);
-  
+  //spooler.write(spooler_offset);  //Writes the spooler speed
+  //auger.write(auger_offset);      //Writes the auger speed
+  //heater.write(heater_offset);    //Writes the heater speed
+   
   switch (screen){
     case 0:
       lcd.clear();

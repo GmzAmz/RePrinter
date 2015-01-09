@@ -27,7 +27,7 @@ void setup()
 
 void loop() 
 {  
-  Serial.println(Output);
+  Serial.println(analogRead(3));
   
   heat_level = analogRead(3);
   auger_speed = analogRead(2);
