@@ -8,7 +8,7 @@ Servo spooler;  // a maximum of eight servo objects can be created
 Servo auger;
 Servo heater;                
  
-int spooler_speed(0); 
+int spooler_speed(90); 
 int auger_speed(0);  
 int heat_level(0);
 
@@ -29,9 +29,9 @@ void loop()
 {  
   Serial.println(analogRead(3));
   
-  heat_level = analogRead(3);
-  auger_speed = analogRead(2);
-  spooler_speed = analogRead(1);
+  //heat_level = analogRead(3);
+  //auger_speed = analogRead(2);
+  //spooler_speed = analogRead(1);
   
   spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
   auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
