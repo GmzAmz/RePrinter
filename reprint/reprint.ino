@@ -18,7 +18,7 @@ int spooler_offset(0);
 int auger_offset(0);
 int heater_offset(0);
 
-int heatPin = 11;
+//int heatPin = 11;
 
 int tempSensor = 0;
 
@@ -33,8 +33,8 @@ char keys[ROWS][COLS] = {
   ,{'7','8','9'  }
   ,{'*','0','#'  }
 };
-byte rowPins[ROWS] = {7,5,3,1};
-byte colPins[COLS] = {2,6,4};
+byte rowPins[ROWS] = {7,5,3,8};
+byte colPins[COLS] = {4,6,2};
 Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 //end keypad stuff
 
@@ -46,7 +46,7 @@ int setD = 0;
 double goalTemp = 0;
 double currTemp = 0;
 
-int LED1 = 9;             // Status LED Pin
+//int LED1 = 9;             // Status LED Pin
 int CS = 10;             // CS pin on MAX6675
 int SO = 12;              // SO pin of MAX6675
 int sCK = 13;             // SCK pin of MAX6675
@@ -73,9 +73,9 @@ void setup()
   
   //spooler.attach(9); //attaches spooler motor controller to pin 11
   //auger.attach(21);  //attaches auger motor controller to pin 6
-  //heater.attach(11);  //attaches heater motor controller to pin 5
+  heater.attach(11);  //attaches heater motor controller to pin 5
   
-  pinMode(heatPin, OUTPUT);
+  //pinMode(heatPin, OUTPUT);
    
   Serial.begin(9600);
   lcd.begin(20,4);
@@ -90,8 +90,8 @@ void loop()
   myPID.Compute(); //pid compute
   
   heat_level = (Output/2.834); //conversion from 255 to 90 from PID
-  Serial.println(heat_level);
-  analogWrite(heatPin, heat_level);
+  Serial.println(heater_offset);
+  //analogWrite(heatPin, heat_level);
   
   spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
   auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
@@ -99,7 +99,7 @@ void loop()
   
   //spooler.write(spooler_offset);  //Writes the spooler speed
   //auger.write(auger_offset);      //Writes the auger speed
-  //heater.write(heater_offset);    //Writes the heater speed
+  heater.write(heater_offset);    //Writes the heater speed
    
   switch (screen){
     case 0:
@@ -188,6 +188,7 @@ void loop()
 }
 
 void keypadEvent(KeypadEvent key){
+  Serial.println(key);
   switch (pad.getState()){
     case PRESSED:
       Serial.println(key);
