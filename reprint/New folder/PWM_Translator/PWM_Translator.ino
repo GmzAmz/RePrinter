@@ -4,6 +4,8 @@
 double Setpoint, Input, Output; //Define Variables we'll be connecting to
 PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT); //Specify the links and initial tuning parameters
 
+int incomingbyte = 0;
+
 Servo spooler;  // a maximum of eight servo objects can be created 
 Servo auger;
 Servo heater;                
@@ -18,8 +20,8 @@ int heater_offset(0);
 
 void setup() 
 {   
-  spooler.attach(9); //attaches spooler motor controller to pin 11
-  auger.attach(10);  //attaches auger motor controller to pin 6
+  spooler.attach(10); //attaches spooler motor controller to pin 11
+  auger.attach(9);  //attaches auger motor controller to pin 6
   heater.attach(11);  //attaches heater motor controller to pin 5
  
   Serial.begin(9600);
@@ -27,9 +29,9 @@ void setup()
 
 void loop() 
 {  
-  Serial.println(analogRead(3));
-  
-  //heat_level = analogRead(3);
+  //Serial.println(analogRead(1));
+  incomingbyte =Serial.read();
+  heat_level = incomingbyte;
   //auger_speed = analogRead(2);
   //spooler_speed = analogRead(1);
   

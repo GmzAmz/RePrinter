@@ -18,7 +18,7 @@ int spooler_offset(0);
 int auger_offset(0);
 int heater_offset(0);
 
-//int heatPin = 11;
+int heatPin = 9;
 
 int tempSensor = 0;
 
@@ -73,7 +73,7 @@ void setup()
   
   //spooler.attach(9); //attaches spooler motor controller to pin 11
   //auger.attach(21);  //attaches auger motor controller to pin 6
-  heater.attach(11);  //attaches heater motor controller to pin 5
+  //heater.attach(9);  //attaches heater motor controller to pin 5
   
   //pinMode(heatPin, OUTPUT);
    
@@ -87,10 +87,12 @@ void setup()
 void loop()
 {    
   currTemp = temp.read_temp();
+  //Serial.println(currTemp);
   myPID.Compute(); //pid compute
   
   heat_level = (Output/2.834); //conversion from 255 to 90 from PID
-  Serial.println(heater_offset);
+  //Serial.println(heat_level);
+  Serial.write(heat_level);
   //analogWrite(heatPin, heat_level);
   
   spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
@@ -99,8 +101,8 @@ void loop()
   
   //spooler.write(spooler_offset);  //Writes the spooler speed
   //auger.write(auger_offset);      //Writes the auger speed
-  heater.write(heater_offset);    //Writes the heater speed
-   
+  //heater.write(heater_offset);    //Writes the heater speed
+  //heater.writeMicroseconds(1700);
   switch (screen){
     case 0:
       lcd.clear();
@@ -140,7 +142,7 @@ void loop()
       lcd.print(goalTemp);
       //set current temp
       lcd.setCursor(16,0);
-      lcd.print(temp.read_temp());
+      lcd.print(currTemp);
       //showBargraph();
       break;
       
