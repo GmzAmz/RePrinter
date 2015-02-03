@@ -9,14 +9,14 @@ Servo spooler;  // a maximum of eight servo objects can be created
 Servo auger;
 Servo heater;                
 
-int spooler_speed(0);   
-int auger_speed(0);  
-int heat_level(0);
+int spoolerSpeed = 0;   
+int augerSpeed = 0;  
+int heatLevel = 0;
 
 //These are all the offsets
-int spooler_offset(0);
-int auger_offset(0);
-int heater_offset(0);
+int spoolerOffset = 0;
+int augerOffset = 0;
+int heaterOffset = 0;
 
 int tempSensor = 0;
 
@@ -81,8 +81,6 @@ void setup()
   //auger.attach(21);  //attaches auger motor controller to pin 6
   heater.attach(9);  //attaches heater motor controller to pin 5
 
-  //pinMode(heatPin, OUTPUT);
-
   Serial.begin(9600);
   lcd.begin(20,4);
   setupLCDChars();
@@ -93,18 +91,20 @@ int t = millis();
 void loop()
 {    
   currTemp = temp.read_temp();
+  
   if (millis()>t+20000){
     myPID.Compute(); //pid compute
   }
-  heat_level = (Output/2.834); //conversion from 255 to 90 from PID
+  
+  heatLevel = (Output/2.834); //conversion from 255 to 90 from PID
 
-  spooler_offset = (spooler_speed+90); //Conversion from servo to motor controller
-  auger_offset = (auger_speed+90);  //Conversion for servo to motor controller
-  heater_offset = (heat_level+90);  //Conversion for servo to motor controller
+  spoolerOffset = (spoolerSpeed+90); //Conversion from servo to motor controller
+  augerOffset = (augerSpeed+90);  //Conversion for servo to motor controller
+  heaterOffset = (heatLevel+90);  //Conversion for servo to motor controller
 
-  //spooler.write(spooler_offset);  //Writes the spooler speed
-  //auger.write(auger_offset);      //Writes the auger speed
-  heater.write(heater_offset);    //Writes the heater speed
+  //spooler.write(spoolerOffset);  //Writes the spooler speed
+  //auger.write(augerOffset);      //Writes the auger speed
+  heater.write(heaterOffset);    //Writes the heater speed
 
   switch (screen){
   case 0:
