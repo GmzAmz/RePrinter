@@ -104,7 +104,7 @@ void loop()
 
   //spooler.write(spooler_offset);  //Writes the spooler speed
   //auger.write(auger_offset);      //Writes the auger speed
-  //heater.write(heater_offset);    //Writes the heater speed
+  heater.write(heater_offset);    //Writes the heater speed
 
   switch (screen){
   case 0:
