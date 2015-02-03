@@ -186,7 +186,18 @@ void loop()
   case 6:
     lcd.setCursor(3,1);
     break;
+  case 7:
+    //set motor speed
+    lcd.clear();
+    lcd.setCursor(0,0);
+    //         --------------------
+    lcd.print("Motor speed: ")
+    screen == 8;
+    break;
+  case 8:
+    
   }
+  
   char key = pad.getKey();
 
   incDecBar();
