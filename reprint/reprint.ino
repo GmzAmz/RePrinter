@@ -77,8 +77,8 @@ void setup()
   currTemp = temp.read_temp();
   myPID.SetMode(AUTOMATIC);  //turn the PID on
 
-  //spooler.attach(9); //attaches spooler motor controller to pin 11
-  //auger.attach(21);  //attaches auger motor controller to pin 6
+  //spooler.attach(0); //attaches spooler motor controller to pin 11
+  //auger.attach(11);  //attaches auger motor controller to pin 6
   heater.attach(9);  //attaches heater motor controller to pin 5
 
   Serial.begin(9600);
