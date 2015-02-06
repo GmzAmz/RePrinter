@@ -1,16 +1,16 @@
 #include <Keypad.h>
-#include <Wire.h> 
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <MAX6675.h>
 #include <Servo.h>
 #include <PID_v1.h>
 
-Servo spooler;  // a maximum of eight servo objects can be created 
+Servo spooler;  // a maximum of eight servo objects can be created
 Servo auger;
-Servo heater;                
+Servo heater;
 
-int spoolerSpeed = 0;   
-int augerSpeed = 0;  
+int spoolerSpeed = 0;
+int augerSpeed = 0;
 int heatLevel = 0;
 
 //These are all the offsets
@@ -71,6 +71,9 @@ uint8_t pos = 0;
 double Output; //Define Variables we'll be connecting to
 PID myPID(&currTemp, &Output, &goalTemp,(double)2,(double)5,(double)1, DIRECT); //Specify the links and initial tuning parameters
 
+
+String sMotorSpeed;
+int motorSpeed;
 void setup()
 {
   //initialize the variables we're linked to
@@ -89,13 +92,13 @@ void setup()
 }
 int t = millis();
 void loop()
-{    
+{
   currTemp = temp.read_temp();
-  
+
   if (millis()>t+20000){
     myPID.Compute(); //pid compute
   }
-  
+
   heatLevel = (Output/2.834); //conversion from 255 to 90 from PID
 
   spoolerOffset = (spoolerSpeed+90); //Conversion from servo to motor controller
@@ -115,6 +118,8 @@ void loop()
     lcd.print("2: Set temperature");
     lcd.setCursor(0,2);
     lcd.print("3: Edit PID values");
+    zzlcd.setCursor(0,4);
+    lcd.print("4: Edit motor speed");
     screen = 42;
     break;
   case 1:
@@ -195,9 +200,9 @@ void loop()
     screen == 8;
     break;
   case 8:
-    
+
   }
-  
+
   char key = pad.getKey();
 
   incDecBar();
@@ -215,14 +220,17 @@ void keypadEvent(KeypadEvent key){
       if (key == '1') {
         screen = 1;
         break;
-      } 
+      }
       else if (key == '2') {
         screen = 3;
         break;
-      } 
+      }
       else if (key == '3') {
         screen = 5;
         break;
+      }
+      else if (key == '4'){
+        screen = 7;
       }
     }
     if (screen == 2) {
@@ -238,22 +246,22 @@ void keypadEvent(KeypadEvent key){
         if (enteredTemp.length() < 7) {
           enteredTemp += key;
           break;
-        } 
+        }
         else {
           break;
         }
-      } 
+      }
       else if (key == '#') {
         goalTemp = enteredTemp.toInt();
         screen = 0;
         break;
-      } 
+      }
       else if (key == '*') {
         enteredTemp.remove(enteredTemp.length() - 1);
         lcd.setCursor(enteredTemp.length() + 6,1);
         lcd.print(" ");
         break;
-      } 
+      }
       else {
         Serial.println("Something went wrong");
         break;
@@ -263,6 +271,9 @@ void keypadEvent(KeypadEvent key){
       updatePIDs(key);
       break;
     }
+    if (screen == 8){
+      updateNum(key, &sMotorSpeed, &motorSpeed);
+      break
   }
 }
 
@@ -275,30 +286,51 @@ void updatePIDs(KeypadEvent key){
       sPID[num].remove(sPID[num].length() - 1);
       lcd.setCursor(PIDpos[num] + sPID[num].length(),1);
       lcd.print(" ");
-    } 
+    }
     else if (num != 0){
       num--;
-    } 
+    }
     else {
       screen = 0;
       num = 0;
     }
-  } 
+  }
   else if (key == '#') {
     if (num != 2) {
       num++;
-    } 
+    }
     else {
       num = 0;
       //insert setPID methods here
       screen = 0;
     }
-  } 
+  }
   else {
     if (sPID[num].length() <= 4) {
       sPID[num] += key;
       lcd.setCursor(PIDpos[num],1);
       lcd.print(sPID[num]);
+    }
+  }
+}
+void updateNum(KeypadEvent key, String *Svalue, int *value){
+  if (key == '*') {
+    if (Svalue.length() != 0){
+      Svalue.remove(Svalue.length() - 1);
+      lcd.setCursor(13 + Svalue.length(),1);
+      lcd.print(" ");
+    }
+    else {
+      screen = 0;
+    }
+  } else if (key == '#') {
+    value = Svalue.toInt;
+    screen = 0;
+  } else {
+    if (Svalue.length() <= 4) {
+      Svalue += key;
+      lcd.setCursor(13,1);
+      lcd.print(Svalue);
     }
   }
 }
@@ -308,21 +340,21 @@ void incDecBar(){
   if (barIncrease == true){
     updateBars(bar);
     bar++;
-  } 
+  }
   else {
     updateBars(bar);
     bar--;
   }
   if ( bar >= 15 ) {
     barIncrease = false;
-  } 
+  }
   else if ( bar == 0 ){
     barIncrease = true;
   }
 }
 void updateBars(uint8_t temp){
   pos++;
-  if (pos > 19){ 
+  if (pos > 19){
     pos = 0;
   }
   graph[pos] = temp;
@@ -332,7 +364,7 @@ void showBargraph(){
   for (int i = 0; i < 20;i++){
     if (pos + i >= 19){
       writeBar(graph[pos + i - 19],  i);
-    } 
+    }
     else {
       writeBar(graph[pos + i + 1], i);
     }
@@ -345,7 +377,7 @@ void writeBar(uint8_t height, uint8_t pos){
     lcd.print(char(height));
     lcd.setCursor(pos,2);
     lcd.print(" ");
-  } 
+  }
   else {
     height -= 8;
     lcd.setCursor(pos, 2);
