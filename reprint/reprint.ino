@@ -74,8 +74,7 @@ PID myPID(&currTemp, &Output, &goalTemp,(double)2,(double)5,(double)1, DIRECT); 
 
 String sMotorSpeed;
 int motorSpeed;
-void setup()
-{
+void setup(){
   //initialize the variables we're linked to
   currTemp = temp.read_temp();
   myPID.SetMode(AUTOMATIC);  //turn the PID on
@@ -91,8 +90,8 @@ void setup()
   pad.addEventListener(keypadEvent);
 }
 int t = millis();
-void loop()
-{
+
+void loop(){
   currTemp = temp.read_temp();
 
   if (millis()>t+20000){
@@ -118,7 +117,7 @@ void loop()
     lcd.print("2: Set temperature");
     lcd.setCursor(0,2);
     lcd.print("3: Edit PID values");
-    zzlcd.setCursor(0,4);
+    lcd.setCursor(0,4);
     lcd.print("4: Edit motor speed");
     screen = 42;
     break;
@@ -148,9 +147,13 @@ void loop()
     //set Ideal temp
     lcd.setCursor(6,0);
     lcd.print(goalTemp);
+    lcd.setCursor(9,0);
+    lcd.print(" c");
     //set current temp
     lcd.setCursor(16,0);
     lcd.print(currTemp);
+    lcd.setCursor(19,0);
+    lcd.print("   ");
     //showBargraph();
     break;
 
@@ -196,18 +199,16 @@ void loop()
     lcd.clear();
     lcd.setCursor(0,0);
     //         --------------------
-    lcd.print("Motor speed: ")
-    screen == 8;
+    lcd.print("Motor speed: ");
+    screen = 8;
     break;
   case 8:
-
-  }
-
+    lcd.setCursor(13,0);
   char key = pad.getKey();
 
   incDecBar();
+  }
 }
-
 void keypadEvent(KeypadEvent key){
   Serial.println(key);
   switch (pad.getState()){
@@ -272,11 +273,11 @@ void keypadEvent(KeypadEvent key){
       break;
     }
     if (screen == 8){
-      updateNum(key, &sMotorSpeed, &motorSpeed);
-      break
+      updateNum(key);
+      break;
+    }
   }
 }
-
 void updatePIDs(KeypadEvent key){
   static int num = 0;
   static int PIDpos[] = {
@@ -313,24 +314,24 @@ void updatePIDs(KeypadEvent key){
     }
   }
 }
-void updateNum(KeypadEvent key, String *Svalue, int *value){
+void updateNum(KeypadEvent key){
   if (key == '*') {
-    if (Svalue.length() != 0){
-      Svalue.remove(Svalue.length() - 1);
-      lcd.setCursor(13 + Svalue.length(),1);
+    if (sMotorSpeed.length() != 0){
+      sMotorSpeed.remove(sMotorSpeed.length() - 1);
+      lcd.setCursor(13 + sMotorSpeed.length(),1);
       lcd.print(" ");
     }
     else {
       screen = 0;
     }
   } else if (key == '#') {
-    value = Svalue.toInt;
+    motorSpeed = sMotorSpeed.toInt();
     screen = 0;
   } else {
-    if (Svalue.length() <= 4) {
-      Svalue += key;
+    if (sMotorSpeed.length() <= 4) {
+      sMotorSpeed += key;
       lcd.setCursor(13,1);
-      lcd.print(Svalue);
+      lcd.print(sMotorSpeed);
     }
   }
 }
@@ -359,7 +360,6 @@ void updateBars(uint8_t temp){
   }
   graph[pos] = temp;
 }
-
 void showBargraph(){
   for (int i = 0; i < 20;i++){
     if (pos + i >= 19){
@@ -370,7 +370,6 @@ void showBargraph(){
     }
   }
 }
-
 void writeBar(uint8_t height, uint8_t pos){
   if (height <=7){
     lcd.setCursor(pos, 3);
@@ -386,7 +385,6 @@ void writeBar(uint8_t height, uint8_t pos){
     lcd.print(char(7));
   }
 }
-
 void setupLCDChars(){
   uint8_t L1[8] = {
     0b00000,
