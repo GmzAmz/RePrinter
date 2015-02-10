@@ -26,14 +26,10 @@ LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I
 const uint8_t ROWS = 4;
 const uint8_t COLS = 3;
 char keys[ROWS][COLS] = {
-  {
-    '1','2','3'    }
-  ,{
-    '4','5','6'    }
-  ,{
-    '7','8','9'    }
-  ,{
-    '*','0','#'    }
+  {'1','2','3'}
+  ,{'4','5','6'}
+  ,{'7','8','9'}
+  ,{'*','0','#'}
 };
 byte rowPins[ROWS] = {
   7,5,3,8};
@@ -80,7 +76,7 @@ void setup(){
   myPID.SetMode(AUTOMATIC);  //turn the PID on
 
   //spooler.attach(0); //attaches spooler motor controller to pin 11
-  //auger.attach(11);  //attaches auger motor controller to pin 6
+  auger.attach(11);  //attaches auger motor controller to pin 6
   heater.attach(9);  //attaches heater motor controller to pin 5
 
   Serial.begin(9600);
@@ -92,6 +88,7 @@ void setup(){
 int t = millis();
 
 void loop(){
+  Serial.println("l");
   currTemp = temp.read_temp();
 
   if (millis()>t+20000){
@@ -105,7 +102,7 @@ void loop(){
   heaterOffset = (heatLevel+90);  //Conversion for servo to motor controller
 
   //spooler.write(spoolerOffset);  //Writes the spooler speed
-  //auger.write(augerOffset);      //Writes the auger speed
+  auger.write(augerOffset);      //Writes the auger speed
   heater.write(heaterOffset);    //Writes the heater speed
 
   switch (screen){
@@ -148,7 +145,7 @@ void loop(){
     lcd.setCursor(6,0);
     lcd.print(goalTemp);
     lcd.setCursor(9,0);
-    lcd.print(" c");
+    lcd.print("  c");
     //set current temp
     lcd.setCursor(16,0);
     lcd.print(currTemp);
@@ -204,10 +201,12 @@ void loop(){
     break;
   case 8:
     lcd.setCursor(13,0);
+    break;
+  }
   char key = pad.getKey();
 
   incDecBar();
-  }
+  
 }
 void keypadEvent(KeypadEvent key){
   Serial.println(key);
@@ -302,7 +301,8 @@ void updatePIDs(KeypadEvent key){
     }
     else {
       num = 0;
-      //insert setPID methods here
+      
+      myPID.SetTunings(sPID[0].toDouble(),sPID[1].toDouble(),sPID[2].toDouble())
       screen = 0;
     }
   }
@@ -325,12 +325,12 @@ void updateNum(KeypadEvent key){
       screen = 0;
     }
   } else if (key == '#') {
-    motorSpeed = sMotorSpeed.toInt();
+    augerSpeed = sMotorSpeed.toInt();
     screen = 0;
   } else {
     if (sMotorSpeed.length() <= 4) {
       sMotorSpeed += key;
-      lcd.setCursor(13,1);
+      lcd.setCursor(13,0);
       lcd.print(sMotorSpeed);
     }
   }
