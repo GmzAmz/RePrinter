@@ -5,22 +5,17 @@
 #include <Servo.h>
 #include <PID_v1.h>
 
-Servo spooler;  // a maximum of eight servo objects can be created
-Servo auger;
-Servo heater;
-
+//misc motor variables and objects
+Servo spooler,auger,heater;
 int spoolerSpeed = 0;
 int augerSpeed = 0;
 int heatLevel = 0;
-
-//These are all the offsets
 int spoolerOffset = 0;
 int augerOffset = 0;
 int heaterOffset = 0;
-
-int tempSensor = 0;
-
-LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+String sMotorSpeed;
+int motorSpeed;
+//end misc motor objects
 
 //begin keypad stuff
 const uint8_t ROWS = 4;
@@ -38,22 +33,21 @@ byte colPins[COLS] = {
 Keypad pad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 //end keypad stuff
 
+//start screen stuff
 int screen = 0;
-String enteredTemp,entP,entI,entD;
-int setP = 0;
-int setI = 0;
-int setD = 0;
+LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+//end screen stuff
+
+//start temp stuff
 double goalTemp = 0;
 double currTemp = 0;
-
-//int LED1 = 9;             // Status LED Pin
-int CS = 10;             // CS pin on MAX6675
+int CS = 10;              // CS pin on MAX6675
 int SO = 12;              // SO pin of MAX6675
 int sCK = 13;             // SCK pin of MAX6675
 int units = 2;            // Units to readout temp (0 = raw, 1 = ˚C, 2 = ˚F)
 float temperature = 0.0;  // Temperature output variable
-
 MAX6675 temp(CS,SO,SCK,units);
+//end temp stuff
 
 //begin bar graph variables
 uint16_t graph[20]  = {
@@ -64,12 +58,15 @@ uint8_t pos = 0;
 // end bar graph variables
 
 //PID Setup, the current temp and goal temp are updated directly in myPID
+String enteredTemp,entP,entI,entD;
+int setP = 0;
+int setI = 0;
+int setD = 0;
 double Output; //Define Variables we'll be connecting to
 PID myPID(&currTemp, &Output, &goalTemp,(double)2,(double)5,(double)1, DIRECT); //Specify the links and initial tuning parameters
+int t = millis();
+//end PID setup
 
-
-String sMotorSpeed;
-int motorSpeed;
 void setup(){
   //initialize the variables we're linked to
   currTemp = temp.read_temp();
@@ -85,8 +82,6 @@ void setup(){
 
   pad.addEventListener(keypadEvent);
 }
-int t = millis();
-
 void loop(){
   Serial.println("l");
   currTemp = temp.read_temp();
@@ -302,7 +297,7 @@ void updatePIDs(KeypadEvent key){
     else {
       num = 0;
       
-      myPID.SetTunings(sPID[0].toDouble(),sPID[1].toDouble(),sPID[2].toDouble())
+      myPID.SetTunings((double)sPID[0].toInt(),(double)sPID[1].toInt(),(double)sPID[2].toInt());
       screen = 0;
     }
   }
